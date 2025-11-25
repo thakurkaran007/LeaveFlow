@@ -1,0 +1,199 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String                @id @default(cuid())
+  attendence             Int?               
+  email                  String                @unique
+  name                   String?
+  emailVerified          DateTime?
+  password               String
+  image                  String?
+  status                 UserStatus            @default(PENDING)
+  role                   UserRole              @default(STUDENT)
+
+  lectures               Lecture[]             @relation("TeacherLecture")
+  studentLectures        Lecture[]             @relation("StudentLecture")
+  studentLeaves          studentLeaveRequest[] @relation("StudentLeaveRequestStudent")
+  signupRequests         SignupRequest[]
+  leavesRequested        LeaveRequest[]        @relation("RequestedLeaves")
+  leavesAssigned         LeaveRequest[]        @relation("AssignedLeaves")
+  replacementOffered     ReplacementOffer[]    @relation("OffersMade")
+  replacementAccepted    ReplacementOffer[]    @relation("OffersAccepted")
+  leavesApproved         LeaveRequest[]        @relation("ApprovedLeaves")          // For Admin/HOD
+  replacementsApproved   ReplacementOffer[]    @relation("ApprovedReplacements")   // For Admin/HOD
+  applications           ApplicationLeave[]    @relation("Applications")
+
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+}
+
+// Normalize subjects into separate model
+model Subject {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  code     String?   @unique
+
+  lectures Lecture[]
+}
+
+model TimeSlot {
+  id        String    @id @default(cuid())
+  startTime DateTime  @unique
+  endTime   DateTime  @unique
+  label     String
+
+  lectures  Lecture[]
+}
+
+model Lecture {
+  id                     String    @id @default(cuid())
+  timeSlotId             String
+  studentId              String?
+  teacherId              String
+  subjectId              String
+  date                   DateTime
+  room                   String?
+  weekDay                Int
+
+  student                User?              @relation("StudentLecture", fields: [studentId], references: [id])
+  teacher                User               @relation("TeacherLecture", fields: [teacherId], references: [id])
+  subject                Subject            @relation(fields: [subjectId], references: [id])
+  timeSlot               TimeSlot           @relation(fields: [timeSlotId], references: [id])
+  leaveRequest           LeaveRequest?
+  replacementOffers      ReplacementOffer[] @relation("OriginalLecture")
+  replacementLectures    ReplacementOffer[] @relation("ReplacementLecture")
+
+  @@unique([teacherId, date, timeSlotId])
+}
+
+model ReplacementOffer {
+  id                String      @id @default(cuid())
+  leaveId           String?
+  lectureId         String      // Original lecture (teacher requesting replacement)
+  replaceLectureId  String?     // Lecture the replacement teacher will teach instead
+  offererId         String      // Teacher offering replacement
+  accepterId        String      // Teacher accepting replacement
+  approverId        String?
+  message           String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  status            OfferStatus @default(PENDING)
+
+  // Relations
+  lecture           Lecture        @relation("OriginalLecture", fields: [lectureId], references: [id], onDelete: Cascade)
+  replaceLecture    Lecture?       @relation("ReplacementLecture", fields: [replaceLectureId], references: [id], onDelete: Cascade)
+  leave             LeaveRequest?  @relation("replacements", fields: [leaveId], references: [id], onDelete: Cascade)
+  offerer           User           @relation("OffersMade", fields: [offererId], references: [id])
+  accepter          User           @relation("OffersAccepted", fields: [accepterId], references: [id])
+  approver          User?          @relation("ApprovedReplacements", fields: [approverId], references: [id])
+
+  @@index([accepterId, status])
+  @@index([lectureId])
+  @@index([replaceLectureId])
+}
+
+model LeaveRequest {
+  id                    String      @id @default(cuid())
+  requesterId           String
+  lectureId             String      @unique
+  approverId            String?
+  reason                String
+  assignedToId          String?
+  status                LeaveStatus @default(PENDING)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  replacementOffers     ReplacementOffer[] @relation("replacements")
+  assignedTo            User?              @relation("AssignedLeaves", fields: [assignedToId], references: [id])
+  requester             User               @relation("RequestedLeaves", fields: [requesterId], references: [id])
+  approver              User?              @relation("ApprovedLeaves", fields: [approverId], references: [id])
+  lecture               Lecture            @relation(fields: [lectureId], references: [id])
+  application           ApplicationLeave?  @relation("LeaveRequestApplication")
+}
+
+model studentLeaveRequest {
+  id                 String      @id @default(cuid())
+  studentId          String
+  applicationId      String?      @unique
+  status             LeaveStatus @default(PENDING)
+  reason             String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  student            User               @relation("StudentLeaveRequestStudent", fields: [studentId], references: [id])
+  application        ApplicationLeave?   @relation("StudentLeaveApplication", fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+model ApplicationLeave {  
+  id              String      @id @default(cuid())
+  applicantId     String?      // stays optional
+  leaveRequestId  String?      @unique  // 🔹 mark unique for 1-1 relation
+  s3ObjectKey     String
+  studentLeaveId  String?      @unique  // 🔹 optional but still 1-1
+
+  leaveRequest  LeaveRequest?        @relation("LeaveRequestApplication", fields: [leaveRequestId], references: [id], onDelete: Cascade)
+  applicant     User?                @relation("Applications", fields: [applicantId], references: [id]) // 🔹 make relation optional
+  studentLeave  studentLeaveRequest? @relation("StudentLeaveApplication")
+
+  @@index([leaveRequestId, s3ObjectKey])
+}
+
+
+model SignupRequest {
+  id            String        @id @default(cuid())
+  name          String?
+  email         String        @unique
+  teacherId     String
+  status        RequestStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+
+  teacher       User          @relation(fields: [teacherId], references: [id])
+}
+
+model VerificationToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+// Separate enums for different contexts
+enum UserRole {
+  HOD
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  DENIED
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  DENIED
+}
