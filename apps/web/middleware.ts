@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 import authConfig from "./auth.config";
 import NextAuth from "next-auth";
 import { apiAuthRoute, authRoutes, DEFAULT_LOGIN_REDIRECT, publicRoutes } from "@/route";
