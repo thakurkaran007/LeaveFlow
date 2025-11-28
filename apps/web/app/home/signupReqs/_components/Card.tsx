@@ -78,6 +78,7 @@ export default function SignupRequestCard({ user, onAccept, onReject }: SignupRe
     setIsAccepting(true);
     try {
       await onAccept(user.id, user.email);
+      window.location.reload();
     } catch (error) {
       console.error("Error accepting user:", error);
     } finally {
@@ -89,6 +90,7 @@ export default function SignupRequestCard({ user, onAccept, onReject }: SignupRe
     setIsRejecting(true);
     try {
       await onReject(user.id, user.email);
+      window.location.reload();
     } catch (error) {
       console.error("Error rejecting user:", error);
     } finally {

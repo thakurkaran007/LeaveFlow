@@ -51,7 +51,7 @@ export default function HODStudentLeaveCard({ leave, onApprove, onReject }: HODS
   const [isRejecting, setIsRejecting] = useState(false);
 
   const hasApplication = leave.applicationId !== null;
-  const isPending = leave.status !== "APPROVED";
+  const isPending = leave.status === "PENDING";
 
   const getStatusBadge = () => {
     if (leave.status === "APPROVED") {

@@ -10,6 +10,11 @@ export const acceptOffer = async (replacementId: string) => {
             const result = await tx.replacementOffer.update({
                 where: { id: replacementId },
                 data: { status: "ACCEPTED" },
+                include: {
+                    offerer: {
+                        select: { email: true }
+                    }
+                }
             });
             
             await tx.replacementOffer.deleteMany({
@@ -18,6 +23,8 @@ export const acceptOffer = async (replacementId: string) => {
                     lectureId: result.lectureId
                 }
             });
+            
+            await sendReplacementEmail(result.offerer.email, "APPROVED");
         });
         return true;
     } catch (error) {

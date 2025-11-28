@@ -71,13 +71,14 @@ export const todayLeave = async() => {
   return leaves.length ? true : false;
 }
 
-export const createLeave = async() => {
+export const createLeave = async(reason: string) => {
   const session = await auth();
   if(!session?.user.id) throw new Error("Not authenticated");
 
   await db.studentLeaveRequest.create({
     data: {
       studentId: session.user.id,
+      reason,
       status: "PENDING"
     }
   })

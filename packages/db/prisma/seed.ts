@@ -192,177 +192,177 @@ async function createLectures(
 // CREATE STUDENT LEAVE REQUESTS
 // ------------------------------------------------------------
 
-async function createStudentLeaveRequests(students: User[]) {
-  console.log("📝 Creating student leave requests...");
+// async function createStudentLeaveRequests(students: User[]) {
+//   console.log("📝 Creating student leave requests...");
 
-  const student1 = students[0]; // Rahul (85% attendance)
-  const student2 = students[1]; // Priya (68% attendance)
+//   const student1 = students[0]; // Rahul (85% attendance)
+//   const student2 = students[1]; // Priya (68% attendance)
 
-  // ========== STUDENT 1 (Rahul) - Good Attendance ==========
+//   // ========== STUDENT 1 (Rahul) - Good Attendance ==========
   
-  // 1. First rejection - NO application (CAN RESUBMIT)
-  await prisma.studentLeaveRequest.create({
-    data: {
-      studentId: student1.id,
-      applicationId: null,
-      status: "DENIED",
-      reason: "Personal work without proper justification",
-      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-    },
-  });
+//   // 1. First rejection - NO application (CAN RESUBMIT)
+//   await prisma.studentLeaveRequest.create({
+//     data: {
+//       studentId: student1.id,
+//       applicationId: null,
+//       status: "DENIED",
+//       reason: "Personal work without proper justification",
+//       createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+//     },
+//   });
 
-  // 2. Pending request WITH application
-  const pendingLeave1 = await prisma.studentLeaveRequest.create({
-    data: {
-      studentId: student1.id,
-      status: "PENDING",
-      reason: "Medical emergency - need to visit specialist doctor for urgent treatment",
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-    },
-  });
+//   // 2. Pending request WITH application
+//   const pendingLeave1 = await prisma.studentLeaveRequest.create({
+//     data: {
+//       studentId: student1.id,
+//       status: "PENDING",
+//       reason: "Medical emergency - need to visit specialist doctor for urgent treatment",
+//       createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+//     },
+//   });
 
-  const pendingApp1 = await prisma.applicationLeave.create({
-    data: {
-      applicantId: student1.id,
-      studentLeaveId: pendingLeave1.id,
-      s3ObjectKey: `students/${pendingLeave1.id}`,
-    },
-  });
+//   const pendingApp1 = await prisma.applicationLeave.create({
+//     data: {
+//       applicantId: student1.id,
+//       studentLeaveId: pendingLeave1.id,
+//       s3ObjectKey: `students/${pendingLeave1.id}`,
+//     },
+//   });
 
-  await prisma.studentLeaveRequest.update({
-    where: { id: pendingLeave1.id },
-    data: { applicationId: pendingApp1.id },
-  });
+//   await prisma.studentLeaveRequest.update({
+//     where: { id: pendingLeave1.id },
+//     data: { applicationId: pendingApp1.id },
+//   });
 
-  // 3. Final rejection WITH application (CANNOT RESUBMIT)
-  const finalRejectedLeave = await prisma.studentLeaveRequest.create({
-    data: {
-      studentId: student1.id,
-      status: "DENIED",
-      reason: "Family trip abroad - declined even with supporting documents",
-      createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
-    },
-  });
+//   // 3. Final rejection WITH application (CANNOT RESUBMIT)
+//   const finalRejectedLeave = await prisma.studentLeaveRequest.create({
+//     data: {
+//       studentId: student1.id,
+//       status: "DENIED",
+//       reason: "Family trip abroad - declined even with supporting documents",
+//       createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
+//     },
+//   });
 
-  const finalRejectedApp = await prisma.applicationLeave.create({
-    data: {
-      applicantId: student1.id,
-      studentLeaveId: finalRejectedLeave.id,
-      s3ObjectKey: `students/${finalRejectedLeave.id}`,
-    },
-  });
+//   const finalRejectedApp = await prisma.applicationLeave.create({
+//     data: {
+//       applicantId: student1.id,
+//       studentLeaveId: finalRejectedLeave.id,
+//       s3ObjectKey: `students/${finalRejectedLeave.id}`,
+//     },
+//   });
 
-  await prisma.studentLeaveRequest.update({
-    where: { id: finalRejectedLeave.id },
-    data: { applicationId: finalRejectedApp.id },
-  });
+//   await prisma.studentLeaveRequest.update({
+//     where: { id: finalRejectedLeave.id },
+//     data: { applicationId: finalRejectedApp.id },
+//   });
 
-  // 4. Approved request WITH application
-  const approvedLeave1 = await prisma.studentLeaveRequest.create({
-    data: {
-      studentId: student1.id,
-      status: "APPROVED",
-      reason: "Sister's wedding ceremony - family function",
-      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), // 15 days ago
-    },
-  });
+//   // 4. Approved request WITH application
+//   const approvedLeave1 = await prisma.studentLeaveRequest.create({
+//     data: {
+//       studentId: student1.id,
+//       status: "APPROVED",
+//       reason: "Sister's wedding ceremony - family function",
+//       createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), // 15 days ago
+//     },
+//   });
 
-  const approvedApp1 = await prisma.applicationLeave.create({
-    data: {
-      applicantId: student1.id,
-      studentLeaveId: approvedLeave1.id,
-      s3ObjectKey: `students/${approvedLeave1.id}`,
-    },
-  });
+//   const approvedApp1 = await prisma.applicationLeave.create({
+//     data: {
+//       applicantId: student1.id,
+//       studentLeaveId: approvedLeave1.id,
+//       s3ObjectKey: `students/${approvedLeave1.id}`,
+//     },
+//   });
 
-  await prisma.studentLeaveRequest.update({
-    where: { id: approvedLeave1.id },
-    data: { applicationId: approvedApp1.id },
-  });
+//   await prisma.studentLeaveRequest.update({
+//     where: { id: approvedLeave1.id },
+//     data: { applicationId: approvedApp1.id },
+//   });
 
-  // ========== STUDENT 2 (Priya) - Low Attendance ==========
+//   // ========== STUDENT 2 (Priya) - Low Attendance ==========
 
-  // 1. First rejection - NO application (CAN RESUBMIT)
-  await prisma.studentLeaveRequest.create({
-    data: {
-      studentId: student2.id,
-      applicationId: null,
-      status: "DENIED",
-      reason: "Need to attend cousin's wedding",
-      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-    },
-  });
+//   // 1. First rejection - NO application (CAN RESUBMIT)
+//   await prisma.studentLeaveRequest.create({
+//     data: {
+//       studentId: student2.id,
+//       applicationId: null,
+//       status: "DENIED",
+//       reason: "Need to attend cousin's wedding",
+//       createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+//     },
+//   });
 
-  // 2. Another first rejection - NO application (CAN RESUBMIT)
-  await prisma.studentLeaveRequest.create({
-    data: {
-      studentId: student2.id,
-      applicationId: null,
-      status: "DENIED",
-      reason: "Festival celebration at home",
-      createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000), // 12 days ago
-    },
-  });
+//   // 2. Another first rejection - NO application (CAN RESUBMIT)
+//   await prisma.studentLeaveRequest.create({
+//     data: {
+//       studentId: student2.id,
+//       applicationId: null,
+//       status: "DENIED",
+//       reason: "Festival celebration at home",
+//       createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000), // 12 days ago
+//     },
+//   });
 
-  // 3. Pending WITHOUT application (HOD will see low attendance warning)
-  await prisma.studentLeaveRequest.create({
-    data: {
-      studentId: student2.id,
-      applicationId: null,
-      status: "PENDING",
-      reason: "Dental appointment scheduled for tooth extraction",
-      createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-    },
-  });
+//   // 3. Pending WITHOUT application (HOD will see low attendance warning)
+//   await prisma.studentLeaveRequest.create({
+//     data: {
+//       studentId: student2.id,
+//       applicationId: null,
+//       status: "PENDING",
+//       reason: "Dental appointment scheduled for tooth extraction",
+//       createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+//     },
+//   });
 
-  // 4. Pending WITH application (but low attendance)
-  const pendingLeave2 = await prisma.studentLeaveRequest.create({
-    data: {
-      studentId: student2.id,
-      status: "PENDING",
-      reason: "Medical appointment at city hospital with doctor's referral",
-      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-    },
-  });
+//   // 4. Pending WITH application (but low attendance)
+//   const pendingLeave2 = await prisma.studentLeaveRequest.create({
+//     data: {
+//       studentId: student2.id,
+//       status: "PENDING",
+//       reason: "Medical appointment at city hospital with doctor's referral",
+//       createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+//     },
+//   });
 
-  const pendingApp2 = await prisma.applicationLeave.create({
-    data: {
-      applicantId: student2.id,
-      studentLeaveId: pendingLeave2.id,
-      s3ObjectKey: `students/${pendingLeave2.id}`,
-    },
-  });
+//   const pendingApp2 = await prisma.applicationLeave.create({
+//     data: {
+//       applicantId: student2.id,
+//       studentLeaveId: pendingLeave2.id,
+//       s3ObjectKey: `students/${pendingLeave2.id}`,
+//     },
+//   });
 
-  await prisma.studentLeaveRequest.update({
-    where: { id: pendingLeave2.id },
-    data: { applicationId: pendingApp2.id },
-  });
+//   await prisma.studentLeaveRequest.update({
+//     where: { id: pendingLeave2.id },
+//     data: { applicationId: pendingApp2.id },
+//   });
 
-  // 5. Approved WITH application
-  const approvedLeave2 = await prisma.studentLeaveRequest.create({
-    data: {
-      studentId: student2.id,
-      status: "APPROVED",
-      reason: "Previous medical emergency with proper documentation",
-      createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000), // 20 days ago
-    },
-  });
+//   // 5. Approved WITH application
+//   const approvedLeave2 = await prisma.studentLeaveRequest.create({
+//     data: {
+//       studentId: student2.id,
+//       status: "APPROVED",
+//       reason: "Previous medical emergency with proper documentation",
+//       createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000), // 20 days ago
+//     },
+//   });
 
-  const approvedApp2 = await prisma.applicationLeave.create({
-    data: {
-      applicantId: student2.id,
-      studentLeaveId: approvedLeave2.id,
-      s3ObjectKey: `students/${approvedLeave2.id}`,
-    },
-  });
+//   const approvedApp2 = await prisma.applicationLeave.create({
+//     data: {
+//       applicantId: student2.id,
+//       studentLeaveId: approvedLeave2.id,
+//       s3ObjectKey: `students/${approvedLeave2.id}`,
+//     },
+//   });
 
-  await prisma.studentLeaveRequest.update({
-    where: { id: approvedLeave2.id },
-    data: { applicationId: approvedApp2.id },
-  });
+//   await prisma.studentLeaveRequest.update({
+//     where: { id: approvedLeave2.id },
+//     data: { applicationId: approvedApp2.id },
+//   });
 
-  console.log("✅ Student leave requests created!");
-}
+//   console.log("✅ Student leave requests created!");
+// }
 
 // ------------------------------------------------------------
 // MAIN
@@ -394,7 +394,6 @@ async function main() {
   await createLectures(teachers, subjects, slots, students);
 
   console.log("📋 Creating student leave requests...");
-  await createStudentLeaveRequests(students);
 
   console.log("🎉 Done! Users, Subjects, Slots, Lectures & Student Leaves seeded.");
 }

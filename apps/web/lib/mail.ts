@@ -174,4 +174,5 @@ export const sendReplacementEmail = async (email: string, status: "APPROVED" | "
         subject: subject,
         html: htmlContent,
     });
+    console.log("Email Sent to: ", email);
 }

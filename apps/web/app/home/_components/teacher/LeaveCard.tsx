@@ -16,6 +16,7 @@ const LeaveCard = ({ leave }: any) => {
 
   const handleShowApplication = async () => {
     try {
+      console.log("Loading application for leave ID:", leave.application.s3ObjectKey);
       const url = await getImageByKey(leave.application.s3ObjectKey);
       console.log("Fetched application URL:", url);
       window.open(url, '_blank', 'noopener,noreferrer');

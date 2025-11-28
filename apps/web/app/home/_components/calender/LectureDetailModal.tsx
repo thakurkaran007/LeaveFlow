@@ -122,8 +122,9 @@ const LectureDetailModal: FC<LectureDetailModalProps> = ({
     }
 
     try {
-      const key = `leaves/${user?.id}/${lecture.id}.pdf`;
+      const key = `leaves/${lecture.id}.pdf`;
       const url = await getSignUrl(key);
+      console.log("Obtained signed URL:", url);
       setSignedUrl(url);
       setShowLeaveDialog(true);
     } catch (error) {

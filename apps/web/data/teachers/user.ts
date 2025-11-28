@@ -150,6 +150,7 @@ export const createApplication = async (id: string, s3ObjectKey: string, newReas
         const application = await db.studentLeaveRequest.update({
         where: { id },
         data: {
+            status: "PENDING",
             reason: newReason,
             application: {
                 create: {

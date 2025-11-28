@@ -50,7 +50,7 @@ export async function approveLeaveRequest(
             }
           }
         }
-      })
+      });
       await sendLeaveApprovedEmail(lec.teacher.email);
     })
   }

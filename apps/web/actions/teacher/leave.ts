@@ -15,7 +15,7 @@ export const createLeave = async (lectureId: string, reason: string, weekDay: nu
     const feasible = await feasibleReq(lectureId, requesterId);
     if (feasible.error) return {error: `${feasible.error}`};
 
-    const key = `leaves/${session.user.name}/${lectureId}.pdf`;
+    const key = `leaves/${lectureId}.pdf`;
 
     try {
         await db.$transaction(async (tx) => {
